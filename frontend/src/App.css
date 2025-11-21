@@ -1,0 +1,47 @@
+body {
+  background-color: #1a1a1a;
+  color: white;
+  font-family: sans-serif;
+  display: flex;
+  justify-content: center;
+}
+
+.app-container {
+  text-align: center;
+}
+
+.btn {
+  padding: 15px 30px;
+  font-size: 20px;
+  cursor: pointer;
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 5px;
+}
+
+.leaderboard {
+  background: #333;
+  padding: 20px;
+  border-radius: 10px;
+  width: 400px;
+  margin: 0 auto;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  background: #444;
+  margin: 5px 0;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+input {
+  padding: 10px;
+  margin-right: 10px;
+}
