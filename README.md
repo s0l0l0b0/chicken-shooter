@@ -88,21 +88,24 @@ Open your browser to the link provided by Vite (usually http://localhost:5173 or
 
 ---
 
-## 📁 Project Structure
+## 📂 Project Structure
 
+```text
 chicken-shooter/
-├── backend/           # FastAPI Server
-│   ├── main.py        # API Endpoints
-│   ├── models.py      # SQLAlchemy Database Models
-│   ├── database.py    # SQLite Connection
-│   └── leaderboard.db # Generated on runtime
+├── backend/               # FastAPI Server
+│   ├── main.py            # API Endpoints & Logic
+│   ├── models.py          # SQLAlchemy Database Models
+│   ├── database.py        # SQLite Connection Setup
+│   ├── pyproject.toml     # Python Dependencies (uv)
+│   └── leaderboard.db     # Database (Auto-generated)
 │
-└── frontend/          # React Client
+└── frontend/              # React Client
     ├── src/
-    │   ├── GameCanvas.jsx  # Main Game Engine (Canvas API)
-    │   ├── Leaderboard.jsx # API Integration & UI
-    │   └── App.css         # Neon/Glass Styling
-    └── package.json
+    │   ├── App.jsx        # Main UI Controller & HUD
+    │   ├── GameCanvas.jsx # Game Engine (Canvas API)
+    │   ├── Leaderboard.jsx# Leaderboard UI & API Calls
+    │   └── App.css        # Cyberpunk/Neon Styling
+    └── package.json       # Frontend Dependencies
 
 
 ## 🛰️ Join the Fleet
