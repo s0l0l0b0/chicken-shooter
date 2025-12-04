@@ -11,10 +11,21 @@
 </div>
 
 ## 🛸 Mission Briefing
+**Galactic Chicken** is a high-octane, neon-soaked arcade shooter. Pilot your starship through infinite waves of interstellar poultry, upgrade your weaponry, and immortalize your name on the global leaderboard.
 
-**Galactic Chicken** is a high-octane, neon-soaked arcade shooter built with a modern web stack. Pilot your starship through infinite waves of interstellar poultry, upgrade your weaponry, and immortalize your name on the global leaderboard.
+---
 
-Built with **React** (Canvas API) for smooth 60FPS rendering and **FastAPI** for a high-performance backend.
+## ⚔️ The Arsenal (Progression)
+As you level up, your ship evolves automatically:
+
+| Level | Upgrade | Description |
+| :--- | :--- | :--- |
+| **Lvl 1** | **Standard Blaster** | Single stream plasma fire. |
+| **Lvl 2** | **Dual Blasters** | Double the firepower. |
+| **Lvl 4** | **Triple Threat** | Wide-spread crowd control. |
+| **Lvl 6** | **Homing Missiles** | Auto-locks onto nearest enemy. Heavy damage. |
+| **Lvl 8** | **Wingman Drones** | Two autonomous UFOs provide support fire. |
+| **Lvl 12** | **Hyper Laser** | Random chance to fire a screen-clearing beam. |
 
 ---
 
