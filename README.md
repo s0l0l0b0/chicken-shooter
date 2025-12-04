@@ -71,7 +71,10 @@ cd frontend
 npm install
 
 # Launch the game
-npm run dev
+npm run dev 
+
+# Access the game via local network
+npm run dev -- --host
 ```
 
 Open your browser to the link provided by Vite (usually http://localhost:5173 or your Network IP).
