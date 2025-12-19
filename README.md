@@ -29,6 +29,33 @@ As you level up, your ship evolves automatically:
 
 ---
 
+## 🎯 Enemy Roster
+Face diverse alien threats with unique behaviors:
+
+| Enemy Type | Emoji | Behavior | Strength |
+| :--- | :---: | :--- | :--- |
+| **Normal Chicken** | 🐔 | Standard wiggle pattern | Balanced |
+| **Fast Chicken** | 🐤 | High-speed straight attacks | Low HP, Quick |
+| **Tank Chicken** | 🦃 | Zigzag movement, heavy armor | High HP, Slow |
+| **Shooter Chicken** | 🦅 | Circular pattern, rapid fire | Medium, Aggressive |
+| **Boss** | 👾 | Orbital movement, massive HP bar | Every 5 levels |
+
+---
+
+## ⚡ Power-Up System
+Collect glowing power-ups (10% drop chance) for temporary advantages:
+
+| Power-Up | Effect | Duration | Visual |
+| :--- | :--- | :---: | :--- |
+| **💊 Health** | Restore +30 HP | Instant | Magenta glow |
+| **🛡️ Shield** | Invulnerability | 5 sec | Cyan bubble |
+| **⚡ Rapid Fire** | 2x fire rate | 6 sec | Yellow pulse |
+| **💎 Score Multiplier** | 2x points | 8 sec | Pink sparkles |
+
+*Power-ups feature pulsing animations, dynamic glows, and sparkle particles for easy visibility!*
+
+---
+
 ## 📸 Flight Recorder
 
 ### ⚔️ Intense Bullet-Hell Action
@@ -43,12 +70,45 @@ Compete for the top spot. Scores, kills, and levels are persisted permanently vi
 
 ## ⚡ System Features
 
+### 🎮 Core Gameplay
 *   **🕹️ Arcade Physics:** Smooth "follow-cursor" movement with inertia.
-*   **🔥 Dynamic Difficulty:** Enemies spawn faster and shoot back as your **Threat Level** increases.
-*   **💪 Power-Up System:** Unlock **Double Blasters** (Lvl 2) and **Triple Threat** (Lvl 4).
-*   **✨ Neon Aesthetics:** Custom CSS glassmorphism, glowing HUDs, and "Orbitron" typography.
-*   **💾 Persistent Data:** SQLite database tracks every pilot's career high scores.
+*   **🔥 Dynamic Difficulty:** Progressive enemy spawn rates and bullet patterns.
+*   **💪 Weapon Progression:** 6-tier upgrade system from single blaster to hyper laser.
+*   **🎯 Enemy Variety:** 5 distinct enemy types with unique movement patterns.
+*   **☄️ Environmental Hazards:** Asteroids spawn after level 3 for added chaos.
 *   **📱 Responsive:** Automatically adjusts canvas size to fit any viewport.
+
+### ⚡ Power-Up System
+*   **4 Collectible Power-Ups:** Health, Shield, Rapid Fire, Score Multiplier
+*   **Visual Feedback:** Pulsing animations, color-coded glows, sparkle particles
+*   **Strategic Depth:** Risk/reward collection during intense combat
+
+### 🔥 Combo & Scoring
+*   **Kill Streak System:** Build combos for bonus points
+*   **Combo Milestones:** 5X, 10X MEGA, 20X UNSTOPPABLE notifications
+*   **Score Multipliers:** Stack with power-ups for massive point gains
+*   **Combo Reset:** Taking damage resets your streak
+
+### 🏆 Achievement System
+*   **9 Unlockable Achievements:** Score, kills, combos, and special challenges
+*   **Achievement Examples:**
+    *   🏆 First 10K - Score 10,000 points
+    *   ⚡ Combo King - Achieve 15x combo
+    *   👾 Boss Hunter - Defeat 5 bosses
+    *   🛡️ Untouchable - Score 5000+ with no damage
+*   **Persistent Tracking:** Achievements saved to database
+
+### ✨ Visual Enhancements
+*   **Distinct Projectiles:** Cyan player bullets vs red-orange enemy fireballs
+*   **Particle Effects:** Explosions, smoke trails, sparkles
+*   **Neon Aesthetics:** Custom CSS glassmorphism, glowing HUDs, "Orbitron" typography
+*   **HP Bars:** Boss and tank enemies display health status
+*   **Shield Effects:** Visual bubble animation during invulnerability
+
+### 💾 Backend Features
+*   **Persistent Data:** SQLite database tracks scores, levels, kills, and achievements
+*   **REST API:** FastAPI backend with CORS support
+*   **Global Leaderboard:** Real-time ranking system
 
 ---
 
@@ -100,6 +160,13 @@ Open your browser to the link provided by Vite (usually http://localhost:5173 or
 | Left Click (Hold) | Fire Weapons |
 | Button: Abort | Emergency Exit (Saves current score) |
 
+### 💡 Pro Tips
+*   **Maintain Combos:** Avoid damage to keep your kill streak multiplier
+*   **Power-Up Priority:** Shield > Multiplier > Rapid Fire > Health
+*   **Boss Strategy:** Learn orbital patterns and use homing missiles
+*   **Asteroid Avoidance:** They take 3 hits to destroy - sometimes better to dodge
+*   **Achievement Hunting:** "Untouchable" requires flawless early-game execution
+
 ---
 
 ## 📂 Project Structure
@@ -141,6 +208,34 @@ Looking for ways to contribute? Here are some key areas:
 - **Visual Enhancements**: Particle effects, animations, and UI improvements
 - **Performance Optimization**: Boost FPS and reduce latency
 - **Multiplayer Support**: Co-op and competitive modes
+- **Mobile Controls**: Touch-based movement and firing
+- **Sound Effects**: Audio feedback for combat and achievements
+
+---
+
+## 🎮 Latest Updates (v2.0)
+
+### New Features
+- ✨ **Enemy Variety**: 5 enemy types with unique behaviors
+- ⚡ **Power-Up System**: 4 collectible buffs with visual effects
+- 🔥 **Combo System**: Kill streaks with bonus scoring
+- ☄️ **Environmental Hazards**: Destructible asteroids
+- 🏆 **Achievement System**: 9 unlockable achievements
+- 👾 **Boss Encounters**: Special battles every 5 levels
+
+### Visual Improvements
+- 💫 Power-ups now feature pulsing, glowing, and sparkle effects
+- 🎯 Player bullets (cyan) vs Enemy bullets (red-orange fireballs)
+- 💥 Enhanced particle effects and explosions
+- 📊 HP bars for bosses and tank enemies
+- 🛡️ Shield bubble animation
+
+### Gameplay Enhancements
+- Progressive difficulty scaling
+- Score multiplier system
+- Combo milestone notifications
+- Achievement tracking in database
+- Improved visual feedback for all game elements
 
 *All contributions must pass our flight readiness review before deployment!*
 <div align="center">

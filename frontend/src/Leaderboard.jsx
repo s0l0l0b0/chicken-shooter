@@ -25,7 +25,8 @@ const Leaderboard = ({ stats, onRestart }) => {
         player_name: name,
         points: stats.score,
         level: stats.level,
-        kills: stats.kills
+        kills: stats.kills,
+        achievements: stats.achievements || []
       });
       setStatus('success');
       fetchLeaderboard();
@@ -53,6 +54,25 @@ const Leaderboard = ({ stats, onRestart }) => {
             <div>{stats.kills}</div>
           </div>
         </div>
+        
+        {stats.achievements && stats.achievements.length > 0 && (
+          <div style={{
+            background: 'rgba(0, 255, 136, 0.1)',
+            padding: '15px',
+            borderRadius: '8px',
+            marginBottom: '20px',
+            border: '1px solid rgba(0, 255, 136, 0.3)'
+          }}>
+            <div style={{ color: '#00ff88', fontSize: '0.9rem', marginBottom: '8px', fontWeight: 'bold' }}>
+              🏆 ACHIEVEMENTS UNLOCKED ({stats.achievements.length})
+            </div>
+            <div style={{ fontSize: '0.8rem', color: '#aaa', lineHeight: '1.6' }}>
+              {stats.achievements.slice(0, 5).map((achievement, i) => (
+                <div key={i}>• {achievement.replace('_', ' ').toUpperCase()}</div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {status !== 'success' ? (
           <div className="input-row">

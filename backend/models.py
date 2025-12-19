@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, JSON
 from database import Base
 
 class Score(Base):
@@ -9,3 +9,4 @@ class Score(Base):
     points = Column(Integer)
     level = Column(Integer)
     kills = Column(Integer)
+    achievements = Column(JSON, default=list)  # Store unlocked achievements

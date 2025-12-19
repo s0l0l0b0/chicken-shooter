@@ -6,11 +6,12 @@ import './App.css';
 
 function App() {
   const [gameState, setGameState] = useState('start');
-  const [finalStats, setFinalStats] = useState({ score: 0, level: 1, kills: 0 });
+  const [finalStats, setFinalStats] = useState({ score: 0, level: 1, kills: 0, achievements: [] });
   
   // Live HUD State
   const [stats, setStats] = useState({ score: 0, hp: 100, level: 1, kills: 0 });
   const [powerMsg, setPowerMsg] = useState(null);
+  const [achievementMsg, setAchievementMsg] = useState(null);
   
   // Lobby Leaderboard State
   const [lobbyLeaders, setLobbyLeaders] = useState([]);
@@ -60,6 +61,11 @@ function App() {
   const triggerPowerUp = (msg) => {
     setPowerMsg(msg);
     setTimeout(() => setPowerMsg(null), 2000);
+  };
+  
+  const triggerAchievement = (msg) => {
+    setAchievementMsg(msg);
+    setTimeout(() => setAchievementMsg(null), 3000);
   };
 
   return (
@@ -141,11 +147,13 @@ function App() {
           </div>
 
           {powerMsg && <div className="powerup-popup">{powerMsg}</div>}
+          {achievementMsg && <div className="achievement-popup">{achievementMsg}</div>}
           
           <GameCanvas 
             onGameOver={handleGameOver}
             onStatsUpdate={setStats}
             showPowerUp={triggerPowerUp}
+            onAchievement={triggerAchievement}
           />
         </>
       )}

@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 
-const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
+const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp, onAchievement }) => {
   const canvasRef = useRef(null);
   
   useEffect(() => {
@@ -45,6 +45,43 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
     let enemyBullets = []; // Chicken fire
     let chickens = [];
     let particles = [];
+    let powerUps = [];     // Power-up drops
+    let asteroids = [];    // Environmental hazards
+    
+    // Gameplay Systems
+    let comboCounter = 0;
+    let comboTimer = 0;
+    let scoreMultiplier = 1;
+    let multiplierTimer = 0;
+    let rapidFireActive = false;
+    let rapidFireTimer = 0;
+    let shieldActive = false;
+    let shieldTimer = 0;
+    
+    // Achievement tracking
+    let achievements = [];
+    let maxCombo = 0;
+    let totalDamageTaken = 0;
+    let bossesKilled = 0;
+    
+    const checkAchievements = () => {
+      const unlock = (id, name) => {
+        if (!achievements.includes(id)) {
+          achievements.push(id);
+          onAchievement(name);
+        }
+      };
+      
+      if (score >= 10000 && !achievements.includes('score_10k')) unlock('score_10k', '🏆 First 10K!');
+      if (score >= 50000 && !achievements.includes('score_50k')) unlock('score_50k', '🏆 Score Master!');
+      if (level >= 10 && !achievements.includes('level_10')) unlock('level_10', '🎯 Level 10 Reached!');
+      if (kills >= 100 && !achievements.includes('kills_100')) unlock('kills_100', '🔫 Century Club!');
+      if (kills >= 500 && !achievements.includes('kills_500')) unlock('kills_500', '🔫 Exterminator!');
+      if (maxCombo >= 15 && !achievements.includes('combo_15')) unlock('combo_15', '⚡ Combo King!');
+      if (maxCombo >= 30 && !achievements.includes('combo_30')) unlock('combo_30', '⚡ Unstoppable Force!');
+      if (bossesKilled >= 5 && !achievements.includes('boss_5')) unlock('boss_5', '👾 Boss Hunter!');
+      if (totalDamageTaken === 0 && score > 5000 && !achievements.includes('no_damage')) unlock('no_damage', '🛡️ Untouchable!');
+    };
 
     // Mouse Input
     let mouseX = canvas.width / 2;
@@ -87,17 +124,90 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
 
     // --- SPAWN LOGIC ---
     const spawnChicken = () => {
-      const size = 40;
+      let size = 40;
+      const rand = Math.random();
+      let type = 'normal';
+      let speed = 2 + (level * 0.4);
+      let hp = 1 + Math.floor(level / 1.5);
+      let shootRate = 0.02;
+      let pattern = 'wiggle';
+      let emoji = '🐔';
+      
+      // Boss every 5 levels
+      if (level % 5 === 0 && frameCount % 300 === 0) {
+        type = 'boss';
+        hp = 20 + (level * 3);
+        speed = 1.5;
+        size = 80;
+        shootRate = 0.05;
+        emoji = '👾';
+        pattern = 'orbit';
+      }
+      // Enemy variety (only after level 2)
+      else if (level > 2) {
+        if (rand < 0.15) { // Fast enemy
+          type = 'fast';
+          speed = 4 + (level * 0.6);
+          hp = 1;
+          emoji = '🐤';
+          pattern = 'straight';
+        } else if (rand < 0.30) { // Tanky enemy
+          type = 'tank';
+          speed = 1 + (level * 0.2);
+          hp = 3 + Math.floor(level / 2);
+          emoji = '🦃';
+          pattern = 'zigzag';
+        } else if (rand < 0.45 && level > 3) { // Shooter enemy
+          type = 'shooter';
+          speed = 1.5 + (level * 0.3);
+          hp = 2;
+          shootRate = 0.04;
+          emoji = '🦅';
+          pattern = 'circle';
+        }
+      }
+      
       chickens.push({
         x: Math.random() * (canvas.width - size),
         y: -50,
         width: size,
         height: size,
-        speed: 2 + (level * 0.4),
-        hp: 1 + Math.floor(level / 1.5), // HP scales with level
-        type: level % 5 === 0 ? 'boss' : 'normal',
+        speed,
+        hp,
+        maxHp: hp,
+        type,
+        shootRate,
+        pattern,
+        emoji,
         wiggle: Math.random() * Math.PI * 2,
-        wiggleSpeed: 0.02 + Math.random() * 0.05
+        wiggleSpeed: 0.02 + Math.random() * 0.05,
+        angle: 0
+      });
+    };
+    
+    const spawnPowerUp = (x, y) => {
+      const types = ['health', 'shield', 'rapid', 'multiplier'];
+      const type = types[Math.floor(Math.random() * types.length)];
+      const emojis = { health: '💊', shield: '🛡️', rapid: '⚡', multiplier: '💎' };
+      
+      powerUps.push({
+        x, y,
+        type,
+        emoji: emojis[type],
+        vy: 2,
+        size: 30
+      });
+    };
+    
+    const spawnAsteroid = () => {
+      asteroids.push({
+        x: Math.random() * canvas.width,
+        y: -50,
+        size: 30 + Math.random() * 40,
+        speed: 1 + Math.random() * 2,
+        rotation: Math.random() * Math.PI * 2,
+        rotationSpeed: (Math.random() - 0.5) * 0.1,
+        hp: 3
       });
     };
 
@@ -113,9 +223,10 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
       player.y = Math.max(0, Math.min(canvas.height - player.height, player.y));
 
       // 2. WEAPON SYSTEMS
+      const fireRate = rapidFireActive ? 4 : 7;
       if (isMouseDown) {
         // A. Standard Blasters (Rate: Fast)
-        if (frameCount % 7 === 0) {
+        if (frameCount % fireRate === 0) {
             if (player.blasterLevel === 1) {
                 bullets.push({ x: player.x + 22, y: player.y, vx: 0, vy: -18, color: '#00ffff' });
             } else if (player.blasterLevel === 2) {
@@ -169,14 +280,51 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
         else if (level === 12) { player.hasLaser = true; msg("HYPER LASER UNLOCKED"); }
       }
 
+      // Spawn enemies
       const spawnRate = Math.max(10, 60 - (level * 3));
       if (frameCount % spawnRate === 0) spawnChicken();
+      
+      // Spawn asteroids (after level 3)
+      if (level > 3 && frameCount % 120 === 0 && Math.random() < 0.4) {
+        spawnAsteroid();
+      }
+      
+      // Update timers
+      if (comboTimer > 0) comboTimer--;
+      if (comboTimer === 0) comboCounter = 0;
+      
+      if (multiplierTimer > 0) {
+        multiplierTimer--;
+      } else {
+        scoreMultiplier = 1;
+      }
+      
+      if (rapidFireTimer > 0) {
+        rapidFireTimer--;
+      } else {
+        rapidFireActive = false;
+      }
+      
+      if (shieldTimer > 0) {
+        shieldTimer--;
+      } else {
+        shieldActive = false;
+      }
 
       // --- DRAWING ---
 
       // Draw Player
       ctx.font = "45px Arial";
       ctx.fillText("🚀", player.x, player.y + 40);
+      
+      // Draw Shield
+      if (shieldActive) {
+        ctx.strokeStyle = `rgba(0, 255, 255, ${0.3 + Math.sin(frameCount * 0.2) * 0.3})`;
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.arc(player.x + 25, player.y + 25, 40, 0, Math.PI * 2);
+        ctx.stroke();
+      }
 
       // Draw Drones
       if (player.hasDrones) {
@@ -208,12 +356,24 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
           ctx.shadowBlur = 0;
       }
 
-      // Draw Bullets
+      // Draw Player Bullets (Cyan/Blue with trails)
       bullets.forEach((b, i) => {
         b.x += b.vx; b.y += b.vy;
+        
+        // Player bullets - bright cyan with glow
+        ctx.shadowBlur = 12; 
+        ctx.shadowColor = b.color;
         ctx.fillStyle = b.color;
-        ctx.shadowBlur = 10; ctx.shadowColor = b.color;
-        ctx.beginPath(); ctx.arc(b.x, b.y, 4, 0, Math.PI*2); ctx.fill();
+        ctx.beginPath(); 
+        ctx.arc(b.x, b.y, 5, 0, Math.PI*2); 
+        ctx.fill();
+        
+        // Bright center
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath(); 
+        ctx.arc(b.x, b.y, 2, 0, Math.PI*2); 
+        ctx.fill();
+        
         ctx.shadowBlur = 0;
         if (b.y < 0) bullets.splice(i, 1);
       });
@@ -258,14 +418,39 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
 
       // Draw Chickens
       chickens.forEach((c, i) => {
+        // Movement patterns
         c.y += c.speed;
-        c.x += Math.sin(frameCount * c.wiggleSpeed + c.wiggle) * 3;
+        c.angle += 0.05;
+        
+        if (c.pattern === 'wiggle') {
+          c.x += Math.sin(frameCount * c.wiggleSpeed + c.wiggle) * 3;
+        } else if (c.pattern === 'zigzag') {
+          c.x += Math.sin(frameCount * 0.05) * 5;
+        } else if (c.pattern === 'circle') {
+          c.x += Math.cos(c.angle) * 2;
+        } else if (c.pattern === 'orbit') {
+          c.x += Math.sin(frameCount * 0.02) * 4;
+        }
+        
+        // Keep in bounds
+        c.x = Math.max(0, Math.min(canvas.width - c.width, c.x));
 
-        ctx.font = c.type === 'boss' ? "70px Arial" : "40px Arial";
-        ctx.fillText(c.type === 'boss' ? "👾" : "🐔", c.x, c.y + 40);
+        // Draw enemy
+        const fontSize = c.type === 'boss' ? 80 : 40;
+        ctx.font = `${fontSize}px Arial`;
+        ctx.fillText(c.emoji, c.x, c.y + 40);
+        
+        // HP bar for bosses and tanks
+        if ((c.type === 'boss' || c.type === 'tank') && c.hp < c.maxHp) {
+          const barWidth = c.width;
+          ctx.fillStyle = '#333';
+          ctx.fillRect(c.x, c.y - 10, barWidth, 5);
+          ctx.fillStyle = c.type === 'boss' ? '#ff0000' : '#ff9900';
+          ctx.fillRect(c.x, c.y - 10, barWidth * (c.hp / c.maxHp), 5);
+        }
 
         // Enemy Shoot
-        if (level >= 2 && Math.random() < 0.02) {
+        if (level >= 2 && Math.random() < c.shootRate) {
             enemyBullets.push({
                 x: c.x + 20, y: c.y + 20,
                 vx: (player.x - c.x) * 0.015, vy: 7,
@@ -295,7 +480,36 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
         if (c.hp <= 0) {
             chickens.splice(i, 1);
             kills++;
-            score += c.type === 'boss' ? 500 : 50 * level;
+            
+            // Combo system
+            comboCounter++;
+            comboTimer = 120; // 2 seconds at 60fps
+            
+            // Score calculation
+            let baseScore = 50 * level;
+            if (c.type === 'boss') baseScore = 500;
+            else if (c.type === 'tank') baseScore = 100;
+            else if (c.type === 'fast') baseScore = 75;
+            else if (c.type === 'shooter') baseScore = 85;
+            
+            const comboBonus = comboCounter > 3 ? Math.floor(comboCounter * 10) : 0;
+            score += Math.floor((baseScore + comboBonus) * scoreMultiplier);
+            
+            // Track achievements
+            if (c.type === 'boss') bossesKilled++;
+            if (comboCounter > maxCombo) maxCombo = comboCounter;
+            checkAchievements();
+            
+            // Combo milestone notifications
+            if (comboCounter === 5) showPowerUp("5X COMBO!");
+            if (comboCounter === 10) showPowerUp("10X MEGA COMBO!");
+            if (comboCounter === 20) showPowerUp("20X UNSTOPPABLE!");
+            
+            // Power-up drop chance (10%)
+            if (Math.random() < 0.10) {
+              spawnPowerUp(c.x + c.width/2, c.y + c.height/2);
+            }
+            
             onStatsUpdate({ score, hp: currentHp, level, kills });
         }
 
@@ -303,28 +517,192 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
         if (player.x < c.x + c.width && player.x + player.width > c.x &&
             player.y < c.y + c.height && player.y + player.height > c.y) {
             chickens.splice(i, 1);
-            currentHp -= 20;
-            createExplosion(player.x, player.y, '#ff0000', 20);
+            if (!shieldActive) {
+              currentHp -= 20;
+              totalDamageTaken += 20;
+              createExplosion(player.x, player.y, '#ff0000', 20);
+              comboCounter = 0; // Reset combo on hit
+            } else {
+              createExplosion(c.x, c.y, '#00ffff', 15);
+            }
         }
         
         if (c.y > canvas.height) chickens.splice(i, 1);
       });
 
-      // Enemy Bullets
+      // Enemy Bullets (Distinct Red/Orange with glow)
       enemyBullets.forEach((eb, i) => {
           eb.x += eb.vx; eb.y += eb.vy;
-          ctx.fillStyle = eb.color;
-          ctx.beginPath(); ctx.arc(eb.x, eb.y, 7, 0, Math.PI*2); ctx.fill();
+          
+          // Draw glowing red enemy bullet
+          ctx.shadowBlur = 15;
+          ctx.shadowColor = '#ff0000';
+          
+          // Outer glow
+          ctx.fillStyle = '#ff3300';
+          ctx.beginPath(); 
+          ctx.arc(eb.x, eb.y, 9, 0, Math.PI*2); 
+          ctx.fill();
+          
+          // Inner core
+          ctx.fillStyle = '#ffff00';
+          ctx.beginPath(); 
+          ctx.arc(eb.x, eb.y, 4, 0, Math.PI*2); 
+          ctx.fill();
+          
+          // Trail effect
+          if (frameCount % 2 === 0) {
+            particles.push({
+              x: eb.x, 
+              y: eb.y, 
+              vx: -eb.vx * 0.2, 
+              vy: -eb.vy * 0.2, 
+              life: 0.4, 
+              color: '#ff4400'
+            });
+          }
+          
+          ctx.shadowBlur = 0;
 
           if (eb.x > player.x && eb.x < player.x + player.width &&
               eb.y > player.y && eb.y < player.y + player.height) {
               enemyBullets.splice(i, 1);
-              currentHp -= 10;
-              createExplosion(player.x, player.y, '#ff0000');
+              if (!shieldActive) {
+                currentHp -= 10;
+                totalDamageTaken += 10;
+                createExplosion(player.x, player.y, '#ff0000');
+                comboCounter = 0; // Reset combo on hit
+              } else {
+                createExplosion(player.x, player.y, '#00ffff', 8);
+              }
           }
           if (eb.y > canvas.height) enemyBullets.splice(i, 1);
       });
 
+      // Power-ups
+      powerUps.forEach((p, i) => {
+        p.y += p.vy;
+        
+        // Blinking and sparkling effect
+        const pulse = Math.sin(frameCount * 0.15) * 0.5 + 0.5; // 0 to 1
+        const scale = 1 + pulse * 0.3; // 1 to 1.3
+        
+        // Outer glow
+        ctx.shadowBlur = 20 + pulse * 15;
+        ctx.shadowColor = p.type === 'health' ? '#ff00ff' : 
+                          p.type === 'shield' ? '#00ffff' :
+                          p.type === 'rapid' ? '#ffff00' : '#ff00ff';
+        
+        // Draw pulsing emoji
+        ctx.font = `${30 * scale}px Arial`;
+        ctx.globalAlpha = 0.8 + pulse * 0.2;
+        ctx.fillText(p.emoji, p.x - (scale - 1) * 15, p.y + (scale - 1) * 15);
+        
+        // Sparkle particles around power-up
+        if (frameCount % 5 === 0) {
+          const angle = Math.random() * Math.PI * 2;
+          const distance = 20 + Math.random() * 10;
+          particles.push({
+            x: p.x + 15 + Math.cos(angle) * distance,
+            y: p.y + Math.sin(angle) * distance,
+            vx: Math.cos(angle) * 2,
+            vy: Math.sin(angle) * 2,
+            life: 0.6,
+            color: ctx.shadowColor
+          });
+        }
+        
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1.0;
+        
+        // Collection
+        if (player.x < p.x + p.size && player.x + player.width > p.x &&
+            player.y < p.y + p.size && player.y + player.height > p.y) {
+          powerUps.splice(i, 1);
+          
+          if (p.type === 'health') {
+            currentHp = Math.min(100, currentHp + 30);
+            showPowerUp("HEALTH +30");
+          } else if (p.type === 'shield') {
+            shieldActive = true;
+            shieldTimer = 300; // 5 seconds
+            showPowerUp("SHIELD ACTIVATED");
+          } else if (p.type === 'rapid') {
+            rapidFireActive = true;
+            rapidFireTimer = 360; // 6 seconds
+            showPowerUp("RAPID FIRE!");
+          } else if (p.type === 'multiplier') {
+            scoreMultiplier = 2;
+            multiplierTimer = 480; // 8 seconds
+            showPowerUp("2X SCORE!");
+          }
+          
+          createExplosion(p.x, p.y, '#00ff00', 10);
+        }
+        
+        if (p.y > canvas.height) powerUps.splice(i, 1);
+      });
+      
+      // Asteroids
+      asteroids.forEach((a, i) => {
+        a.y += a.speed;
+        a.rotation += a.rotationSpeed;
+        
+        // Draw asteroid
+        ctx.save();
+        ctx.translate(a.x, a.y);
+        ctx.rotate(a.rotation);
+        ctx.fillStyle = '#666';
+        ctx.beginPath();
+        for(let j = 0; j < 8; j++) {
+          const angle = (j / 8) * Math.PI * 2;
+          const radius = a.size * (0.8 + Math.random() * 0.4);
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius;
+          if (j === 0) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+        
+        // Bullet collision
+        bullets.forEach((b, bi) => {
+          if (Math.hypot(b.x - a.x, b.y - a.y) < a.size) {
+            bullets.splice(bi, 1);
+            a.hp--;
+            createExplosion(a.x, a.y, '#888', 3);
+          }
+        });
+        
+        // Missile collision
+        missiles.forEach((m, mi) => {
+          if (Math.hypot(m.x - a.x, m.y - a.y) < a.size) {
+            missiles.splice(mi, 1);
+            a.hp -= 3;
+            createExplosion(a.x, a.y, '#ffaa00', 8);
+          }
+        });
+        
+        // Player collision
+        if (Math.hypot(player.x + player.width/2 - a.x, player.y + player.height/2 - a.y) < a.size + 25) {
+          if (!shieldActive) {
+            currentHp -= 15;
+            totalDamageTaken += 15;
+            createExplosion(player.x, player.y, '#ff0000', 15);
+            comboCounter = 0;
+          }
+          a.hp = 0;
+        }
+        
+        if (a.hp <= 0) {
+          asteroids.splice(i, 1);
+          createExplosion(a.x, a.y, '#888', 20);
+        }
+        
+        if (a.y > canvas.height + 50) asteroids.splice(i, 1);
+      });
+      
       // Particles
       particles.forEach((p, i) => {
           p.x += p.vx; p.y += p.vy; p.life -= 0.05;
@@ -333,12 +711,22 @@ const GameCanvas = ({ onGameOver, onStatsUpdate, showPowerUp }) => {
           if (p.life <= 0) particles.splice(i, 1);
       });
       ctx.globalAlpha = 1.0;
+      
+      // Draw combo counter
+      if (comboCounter > 3) {
+        ctx.font = "30px Arial";
+        ctx.fillStyle = '#ffff00';
+        ctx.shadowBlur = 10;
+        ctx.shadowColor = '#ffff00';
+        ctx.fillText(`${comboCounter}X COMBO!`, canvas.width / 2 - 80, 100);
+        ctx.shadowBlur = 0;
+      }
 
       onStatsUpdate({ score, hp: currentHp, level, kills });
 
       if (currentHp <= 0) {
         cancelAnimationFrame(animationFrameId);
-        onGameOver({ score, level, kills });
+        onGameOver({ score, level, kills, achievements });
       } else {
         animationFrameId = requestAnimationFrame(render);
       }

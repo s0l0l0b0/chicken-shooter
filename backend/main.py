@@ -2,6 +2,7 @@ from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
+from typing import List, Optional
 import models, database
 
 # Initialize DB
@@ -23,6 +24,7 @@ class ScoreSchema(BaseModel):
     points: int
     level: int
     kills: int
+    achievements: Optional[List[str]] = []
 
 def get_db():
     db = database.SessionLocal()
@@ -41,7 +43,8 @@ def submit_score(score: ScoreSchema, db: Session = Depends(get_db)):
         player_name=score.player_name, 
         points=score.points,
         level=score.level,
-        kills=score.kills
+        kills=score.kills,
+        achievements=score.achievements or []
     )
     db.add(db_score)
     db.commit()

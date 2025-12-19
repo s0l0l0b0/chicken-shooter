@@ -259,6 +259,36 @@ canvas {
   white-space: nowrap;
 }
 
+/* --- ACHIEVEMENT POPUP --- */
+.achievement-popup {
+  position: absolute;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 1.8rem;
+  color: #00ff88;
+  font-weight: 900;
+  background: rgba(0, 0, 0, 0.85);
+  padding: 20px 40px;
+  border-radius: 12px;
+  border: 2px solid #00ff88;
+  text-shadow: 0 0 15px rgba(0, 255, 136, 1);
+  box-shadow: 0 0 30px rgba(0, 255, 136, 0.4);
+  animation: achievementBounce 3s forwards;
+  z-index: 25;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+@keyframes achievementBounce {
+  0% { opacity: 0; transform: translateX(-50%) translateY(-30px) scale(0.5); }
+  10% { opacity: 1; transform: translateX(-50%) translateY(0) scale(1.1); }
+  15% { transform: translateX(-50%) translateY(-5px) scale(1); }
+  20% { transform: translateX(-50%) translateY(0) scale(1); }
+  90% { opacity: 1; }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-20px) scale(0.9); }
+}
+
 @keyframes fadeUp {
   0% { opacity: 0; transform: translate(-50%, -20%) scale(0.5); }
   20% { opacity: 1; transform: translate(-50%, -50%) scale(1.2); }
